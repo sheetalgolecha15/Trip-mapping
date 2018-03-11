@@ -1,0 +1,128 @@
+---
+title: "Untitled"
+author: "Sheetal"
+date: "3/3/2018"
+output: html_document
+---
+
+Hi, I am sheetal. All my life only city has been my home that is Hyderbad. So i cant share list of homes. but i would share list of holiday places in last few years.
+
+```{r setup, include=FALSE}
+setwd("/Users/sheetalgolecha/Documents/Data collection/Session-4 Materials-20180221")
+getwd()   # check if it worked
+
+suppressPackageStartupMessages({
+  if (!require(stringr)){ install.packages("stringr")}; library(stringr)
+  if (!require(leaflet)){ install.packages("leaflet")}; library(leaflet)
+  if (!require(jsonlite)){ install.packages("jsonlite")}; library(jsonlite)
+  })
+```
+Lets load Json file. i have amended the file has the places i have been around where not present.
+
+```{r}
+ City_cords = jsonlite::fromJSON("./city.list.json") 
+str(City_cords)
+
+```
+Now subsetting the whole list with only cities of india.
+```{r}
+a=City_cords$country=="IN"
+ind_city=City_cords[a,]
+```
+I have visited a lot of places since my childhood, because my parents loved holiday. We had a lot of fun time.
+	 But my real journey started in the year 2013, For the first time being in my home town I had to celebrate my birthday alone. I decided against it , and spent it with 20 strangers on a trek to Kalvantindurg and never realised when 20 strangers became friends and my journey to my discovery began. Since then treks have become my passion.
+
+Next month I wen to Palani. (Its like heaven on earth) SO beautiful with all the huge trees around.
+The journey continued to other places Salher(MAharahtra), Kodachadri(Karnataka) , rajmachi(Maharahtra) and so on.
+I even did two Himalayan treks to Sandhakphu and goechala.
+
+In middle of all this  my thirst for adventures dint end did my paragliding course in Kamshet.One heck of an experience.
+
+With all the intro you might think I love Mountains but I love beaches too, So Goa is a place I visit at least once in 3 months for almost a year.
+
+Lets look at my journey from 2013
+
+Kalvantindurg (MH) (Mar 2015)
+Palalni (TN) (Apr 2015)
+Goa (Apr 2015)
+Salher (Mh) (Jun 2015)
+Raj Machi (Jul 2015)
+Gokarna (KA) (Nov 2015)
+Pallani (TN) (Nov 2015)
+Sandhakphu (Sikkim) (Dec 2015)
+Coorg (KA)(sep 2016)
+Goechala (May 2017)
+Rajgadh to Torna (Jun 2017)
+Kerala (Oct 2017)
+Goa (NOv 2017)
+
+oops realised i have missed a lot of places nice way to update the sheet  :P.
+
+
+```{r cars}
+Places <- c("Hyderabad", "Prabhalgadh","Pallani","Salher","Rajmachi","Gokarna","Sandhakphu","Nagala","kamshet",                     "State of Goa","coorg","Goechala","State Of Kerala","Mumbai")
+
+reason <- c("Home", "First Trek Mar 2013","Second trek Where i met an amazing person Mohit","another with old friends. where i realised am not peoples person","First with COusin bad idea :P","After a break of Six months :(","First Himalayan Trek","First Natural water slide","My first paralide :)","Love swimming and beach too","Famil trip2016","Second himalayan trek with a best friend touhing a height 5000 mtrs","Family trip 2017","Missed my friends")
+
+```
+
+now lets subset the places i have visited from Json file.
+
+```{r }
+my_list = data.frame(id=integer(), name=character(), country=character(),
+                  coord.lon=numeric(), coord.lat=numeric(), stringsAsFactors=FALSE)
+my_list
+
+for(i in 1:length(Places)){
+     x=ind_city[tolower(ind_city$name)==tolower(Places[i]),]
+     my_list=rbind(my_list,x)
+}
+
+my_list  
+
+```
+Lets create a new dataframe where we have the cordinates and reason for my holidays.
+```{r}
+my_list
+
+holiday=data.frame(Places,reason)
+for (i in 1:length(Places)){
+  holiday$lat[i]=my_list$coord$lat[i]
+  holiday$lon[i]=my_list$coord$lon[i]
+}
+holiday
+```
+Lets create the max and min cordinates to know max size of the map.
+```{r}
+lon1=min(holiday$lon)-1;lon1
+lon2=max(holiday$lon)+1;lon2
+lat1=min(holiday$lat)-1;lat1
+lat2=max(holiday$lat)+1;lat2
+```
+Lets view at my travel.
+```{r}
+mymap = leaflet() %>%
+  
+  addProviderTiles("Stamen.Watercolor") %>%    # try '?addProviderTiles'
+  
+  addProviderTiles("Stamen.TonerHybrid", 
+                   options = providerTileOptions(opacity = 0.8)) %>%
+  
+  # setView(5, 20, zoom=1) %>%
+  setMaxBounds(lon1, lat1, lon2, lat2) %>%
+  
+  # color and weight arguments for the color and weight of the line
+  addPolylines(data=holiday, ~lon, ~lat, color = "BLACK", 
+               weight = 2, opacity = 0.6) %>%
+  
+  addCircleMarkers(data=holiday, ~lon, ~lat,  color = "#daa520", 
+                   opacity = 0.6, radius = 2, popup = paste(holiday$city, holiday$desc, sep="<br>"))
+
+mymap
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+cya :)
